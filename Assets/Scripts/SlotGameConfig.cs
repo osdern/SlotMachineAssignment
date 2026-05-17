@@ -54,6 +54,7 @@ public class SlotGameConfig : MonoBehaviour
     // -------------------------------------------------------------------------
 
     private bool _isSpinning;
+    private int _loopComplete;
 
     // -------------------------------------------------------------------------
     // Public read-only properties
@@ -73,6 +74,9 @@ public class SlotGameConfig : MonoBehaviour
 
     /// <summary>Amount deducted from the player's balance on each spin.</summary>
     public float GamblingMoney => _gamblingMoney;
+
+    /// <summary>Number of slots that have completed their spin and stopped via luck.</summary>
+    public int LoopComplete => _loopComplete;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -101,6 +105,18 @@ public class SlotGameConfig : MonoBehaviour
     {
         _isSpinning = false;
         _remainingTime = 0f;
+    }
+
+    /// <summary>Increments the loop complete counter by 1.</summary>
+    public void IncrementLoopComplete()
+    {
+        _loopComplete++;
+    }
+
+    /// <summary>Resets the loop complete counter to 0. Call this at the start of each new spin.</summary>
+    public void ResetLoopComplete()
+    {
+        _loopComplete = 0;
     }
 
     /// <summary>

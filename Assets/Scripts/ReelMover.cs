@@ -64,6 +64,7 @@ public class ReelMover : MonoBehaviour
 
     private RectTransform _rectTransform;
     private SlotGameConfig _config;
+    private WinningCondition _winningCondition;
     private Sequence _sequence;
     private bool _isPaused;
 
@@ -82,6 +83,7 @@ public class ReelMover : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
 
         _config = FindFirstObjectByType<SlotGameConfig>();
+        _winningCondition = FindFirstObjectByType<WinningCondition>();
 
         if (_config == null)
         {
@@ -265,9 +267,10 @@ public class ReelMover : MonoBehaviour
     /// </summary>
     private void OnReachedSlotPosition()
     {
-        // Mark self as stopped — sequence auto-kills here so Pause() won't work
         _isStopped = true;
         _isPaused = true;
+
+        _config?.StopSpin();
 
         if (transform.parent == null)
         {
@@ -285,6 +288,16 @@ public class ReelMover : MonoBehaviour
                 mover.Pause();
             }
         }
+
+        if (_config != null)
+        {
+            _config.IncrementLoopComplete();
+
+            if (_config.LoopComplete >= 3)
+            {
+                _winningCondition?.Evaluate();
+            }
+        }
     }
 
     /// <summary>
@@ -299,7 +312,8 @@ public class ReelMover : MonoBehaviour
             return;
         }
 
-        Instantiate(_spawnPrefab, transform.parent);
+        RectTransform spawned = Instantiate(_spawnPrefab, transform.parent);
+        spawned.anchoredPosition = _startPosition;
     }
 
     private void KillTween()

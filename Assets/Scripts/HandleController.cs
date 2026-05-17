@@ -1,17 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Attach to the Handle_up GameObject (which already has a Button component).
+/// Attached to the Handle_up GameObject (which has a Button component).
 ///
-/// On click:
-///   1. Hides Handle_up, shows Handle_Down.
-///   2. After 0.5 s, hides Handle_Down and shows Handle_up again.
-///   3. Deducts GamblingMoney from SlotGameConfig and updates the Money TMP label.
-///   4. Resumes movement on every ReelMover in the scene and restarts the spin timer.
+/// Responsibilities:
+///   1. Toggle Handle_up / Handle_Down visuals on click.
+///   2. Shake the handle when the reels are still spinning.
+///   3. Trigger a deduction via MoneyManager and restart the reels.
 /// </summary>
 [RequireComponent(typeof(Button))]
 public class HandleController : MonoBehaviour
@@ -21,6 +20,10 @@ public class HandleController : MonoBehaviour
     // -------------------------------------------------------------------------
 
     private const float HandleDownDuration = 0.5f;
+    private const float ShakeDuration = 0.4f;
+    private const float ShakeStrength = 12f;
+    private const int ShakeVibrato = 20;
+    private const float ShakeRandomness = 45f;
 
     // -------------------------------------------------------------------------
     // Inspector fields
@@ -30,18 +33,15 @@ public class HandleController : MonoBehaviour
     [Tooltip("The Handle_Down GameObject to show briefly on click.")]
     [SerializeField] private GameObject _handleDown;
 
-    [Tooltip("The Money TextMeshProUGUI label that displays the current balance.")]
-    [SerializeField] private TextMeshProUGUI _moneyText;
-
     // -------------------------------------------------------------------------
     // Private state
     // -------------------------------------------------------------------------
 
     private Button _button;
     private Image _handleUpImage;
+    private RectTransform _rectTransform;
     private SlotGameConfig _config;
     private bool _isAnimating;
-    private float _currentBalance;
 
     // -------------------------------------------------------------------------
     // Unity lifecycle
@@ -51,6 +51,7 @@ public class HandleController : MonoBehaviour
     {
         _button = GetComponent<Button>();
         _handleUpImage = GetComponent<Image>();
+        _rectTransform = GetComponent<RectTransform>();
         _config = FindFirstObjectByType<SlotGameConfig>();
 
         if (_config == null)
@@ -58,7 +59,7 @@ public class HandleController : MonoBehaviour
             Debug.LogError("[HandleController]: No SlotGameConfig found in the scene.", this);
         }
 
-        // Auto-find Handle_Down if not set in inspector
+        // Auto-find Handle_Down if not assigned in the Inspector
         if (_handleDown == null)
         {
             _handleDown = GameObject.Find("Handle_Down");
@@ -69,29 +70,7 @@ public class HandleController : MonoBehaviour
             }
         }
 
-        // Auto-find Money label if not set in inspector
-        if (_moneyText == null)
-        {
-            GameObject moneyObj = GameObject.Find("Money");
-
-            if (moneyObj != null)
-            {
-                _moneyText = moneyObj.GetComponent<TextMeshProUGUI>();
-            }
-
-            if (_moneyText == null)
-            {
-                Debug.LogError("[HandleController]: Money TextMeshProUGUI not found.", this);
-            }
-        }
-
         _button.onClick.AddListener(OnHandleClicked);
-
-        // Seed the running balance from whatever the Money text currently shows
-        if (_moneyText != null && float.TryParse(_moneyText.text.Trim(), out float parsed))
-        {
-            _currentBalance = parsed;
-        }
     }
 
     private void OnDestroy()
@@ -110,7 +89,21 @@ public class HandleController : MonoBehaviour
             return;
         }
 
+        if (_config != null && _config.IsSpinning)
+        {
+            ShakeHandle();
+            return;
+        }
+
         StartCoroutine(HandleSequence());
+    }
+
+    /// <summary>
+    /// Shakes the handle's RectTransform to indicate the reels are still spinning.
+    /// </summary>
+    private void ShakeHandle()
+    {
+        _rectTransform.DOShakeAnchorPos(ShakeDuration, ShakeStrength, ShakeVibrato, ShakeRandomness);
     }
 
     private IEnumerator HandleSequence()
@@ -144,8 +137,11 @@ public class HandleController : MonoBehaviour
 
         _button.interactable = true;
 
-        // Deduct gambling money and update label
-        DeductMoney();
+        // Delegate money deduction to MoneyManager
+        if (_config != null && MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.Deduct(_config.GamblingMoney);
+        }
 
         // Restart spin timer and resume all ReelMovers
         RestartReels();
@@ -154,32 +150,14 @@ public class HandleController : MonoBehaviour
     }
 
     /// <summary>
-    /// Subtracts GamblingMoney from the running balance and refreshes the Money label.
-    /// </summary>
-    private void DeductMoney()
-    {
-        if (_config == null)
-        {
-            return;
-        }
-
-        _currentBalance = Mathf.Max(0f, _currentBalance - _config.GamblingMoney);
-
-        if (_moneyText != null)
-        {
-            _moneyText.text = _currentBalance.ToString("0");
-        }
-    }
-
-    /// <summary>
     /// Restarts the SlotGameConfig spin timer and resumes every ReelMover in the scene.
-    /// - Paused items (mid-tween siblings or stopped winners) are resumed via ResumeFromPause().
-    /// - Waiting items (spawned at start, never started) are kicked off via StartMovement().
+    /// Waiting movers are kicked off via StartMovement(); paused ones via ResumeFromPause().
     /// </summary>
     private void RestartReels()
     {
         if (_config != null)
         {
+            _config.ResetLoopComplete();
             _config.StopSpin();
             _config.StartSpin();
         }
