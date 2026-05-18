@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -136,6 +137,14 @@ public class HandleController : MonoBehaviour
         }
 
         _button.interactable = true;
+
+        // Reload the scene if the player can't afford the next spin.
+        if (_config != null && MoneyManager.Instance != null &&
+            MoneyManager.Instance.GetBalance() < _config.GamblingMoney)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            yield break;
+        }
 
         // Delegate money deduction to MoneyManager
         if (_config != null && MoneyManager.Instance != null)

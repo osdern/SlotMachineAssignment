@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 129fb9741ff11234ab32320e49f5512b
+guid: 8adb9cd8ede6ab94382836e072536928
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3063172094831428878
-    second: bg_gradient_0
+      213: -3431851288804313361
+    second: grumpy-bald-middleage-mafia-man-cartoon-character_1308-161777_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -139,45 +139,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bg_gradient_0
+      name: grumpy-bald-middleage-mafia-man-cartoon-character_1308-161777_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1920
-        height: 1080
+        x: 6
+        y: 8
+        width: 470
+        height: 610
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2fafea9853d6d75d0800000000000000
-      internalID: -3063172094831428878
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: bg_gradient_1
-      rect:
-        serializedVersion: 2
-        x: 2
-        y: 778
-        width: 1918
-        height: 302
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e695ab35a091d604b948ecb50e4a4e91
-      internalID: 639845227
+      spriteID: fe63ad08f6d9f50d0800000000000000
+      internalID: -3431851288804313361
       vertices: []
       indices: 
       edges: []
@@ -186,7 +164,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 81b05c9517ea0404a9e1fbf13499469e
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -196,8 +174,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bg_gradient_0: -3063172094831428878
-      bg_gradient_1: 639845227
+      grumpy-bald-middleage-mafia-man-cartoon-character_1308-161777_0: -3431851288804313361
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
