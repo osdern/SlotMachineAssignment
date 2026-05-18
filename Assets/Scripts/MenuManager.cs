@@ -75,6 +75,7 @@ public class MenuManager : MonoBehaviour
         SetPanel(_pauseMenuPanel, true);
         SetPanel(_settingsPanel, false);
         Time.timeScale = 0f;
+        AudioManager.Instance?.PauseAudio();
     }
 
     /// <summary>
@@ -84,6 +85,7 @@ public class MenuManager : MonoBehaviour
     {
         SetPanel(_pauseMenuPanel, false);
         Time.timeScale = 1f;
+        AudioManager.Instance?.ResumeAudio();
     }
 
     /// <summary>
@@ -110,6 +112,7 @@ public class MenuManager : MonoBehaviour
     public void MainMenu()
     {
         Time.timeScale = 1f;
+        AudioManager.Instance?.ResumeAudio();
         SceneManager.LoadScene(_mainMenuSceneName);
     }
 
@@ -120,6 +123,15 @@ public class MenuManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(_gameplaySceneName);
+    }
+
+    /// <summary>
+    /// Wipes all save data and returns to the main menu.
+    /// Wire this to the Reset button in the pause menu.
+    /// </summary>
+    public void ResetGame()
+    {
+        SaveManager.Instance?.ResetGame(_mainMenuSceneName);
     }
 
     // -------------------------------------------------------------------------

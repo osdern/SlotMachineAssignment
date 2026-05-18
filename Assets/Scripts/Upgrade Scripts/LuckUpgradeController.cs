@@ -98,6 +98,16 @@ public class LuckUpgradeController : MonoBehaviour
         {
             Debug.LogError("[LuckUpgradeController]: No Button component found.", this);
         }
+    }
+
+    private void Start()
+    {
+        // Read tier in Start so SlotGameConfig.Awake has already
+        // restored all saved luck values before we display them.
+        if (SaveManager.Instance != null)
+        {
+            _currentTier = SaveManager.Instance.Data.luckTier;
+        }
 
         RefreshUI();
     }
@@ -137,6 +147,13 @@ public class LuckUpgradeController : MonoBehaviour
         MoneyManager.Instance.Deduct(cost);
         ApplyLuckUpgrade();
         _currentTier++;
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.Data.luckTier = _currentTier;
+            SaveManager.Instance.Save();
+        }
+
         RefreshUI();
     }
 

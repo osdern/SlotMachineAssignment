@@ -133,6 +133,7 @@ public class WinningCondition : MonoBehaviour
 
         Debug.Log($"[WinningCondition]: {matchCount}-match on {dominantSymbol} — awarding {coins} coins.");
 
+        AudioManager.Instance?.PlayReward();
         SpawnWinCoins(coins);
         MoneyManager.Instance?.AddMoney(coins);
     }

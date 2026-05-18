@@ -80,6 +80,13 @@ public class DialogueController : MonoBehaviour
 
     private void Start()
     {
+        // Skip the story entirely if it has already been seen.
+        if (SaveManager.Instance != null && SaveManager.Instance.Data.storyShown)
+        {
+            if (_storyPanel != null) _storyPanel.SetActive(false);
+            return;
+        }
+
         // Hide both characters; the panel itself should already be active.
         SetSpeaker(Speaker.None);
         ClearTexts();
@@ -126,10 +133,16 @@ public class DialogueController : MonoBehaviour
             yield return new WaitUntil(() => !_waitingForAdvance);
         }
 
-        // All lines done — grant bonus coins, then hide the panel.
+        // All lines done — grant bonus coins, mark story as seen, then hide the panel.
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AddMoney(EndBonusCoins);
+        }
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.Data.storyShown = true;
+            SaveManager.Instance.Save();
         }
 
         if (_skipHintText != null) _skipHintText.gameObject.SetActive(false);

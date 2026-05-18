@@ -118,6 +118,8 @@ public class HandleController : MonoBehaviour
             _handleUpImage.enabled = false;
         }
 
+        AudioManager.Instance?.PlayHandle();
+
         if (_handleDown != null)
         {
             _handleDown.SetActive(true);

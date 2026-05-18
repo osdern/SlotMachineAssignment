@@ -109,12 +109,23 @@ public class TimeAndMoneyUpgradeController : MonoBehaviour
             return;
         }
 
-        // Compute how many 1-second reductions fit before hitting the minimum.
-        _initialSpinDuration = _config.SpinDuration;
-        _timeMaxTiers = Mathf.Max(0, Mathf.FloorToInt(_initialSpinDuration - TimeMinDuration));
-
         RegisterSlot(_moneySlot, OnMoneyUpgradeClicked);
         RegisterSlot(_timeSlot,  OnTimeUpgradeClicked);
+
+        if (SaveManager.Instance != null)
+        {
+            _moneySlot.CurrentTier = SaveManager.Instance.Data.moneyTier;
+            _timeSlot.CurrentTier  = SaveManager.Instance.Data.timeTier;
+        }
+    }
+
+    private void Start()
+    {
+        // Guard against a failed Awake (config not found).
+        if (_config == null) return;
+
+        _initialSpinDuration = _config.SpinDuration + (_timeSlot.CurrentTier * TimeReductionPerTier);
+        _timeMaxTiers = Mathf.Max(0, Mathf.FloorToInt(_initialSpinDuration - TimeMinDuration));
 
         RefreshMoneyUI();
         RefreshTimeUI();
@@ -168,6 +179,13 @@ public class TimeAndMoneyUpgradeController : MonoBehaviour
         MoneyManager.Instance.Deduct(cost);
         _config.SetGamblingMoney(_config.GamblingMoney * MoneyGambleMultiplier);
         _moneySlot.CurrentTier++;
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.Data.moneyTier = _moneySlot.CurrentTier;
+            SaveManager.Instance.Save();
+        }
+
         RefreshMoneyUI();
     }
 
@@ -194,6 +212,13 @@ public class TimeAndMoneyUpgradeController : MonoBehaviour
         MoneyManager.Instance.Deduct(cost);
         _config.SetSpinDuration(_config.SpinDuration - TimeReductionPerTier);
         _timeSlot.CurrentTier++;
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.Data.timeTier = _timeSlot.CurrentTier;
+            SaveManager.Instance.Save();
+        }
+
         RefreshTimeUI();
     }
 

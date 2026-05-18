@@ -122,6 +122,7 @@ public class MultiplierUpgradeController : MonoBehaviour
                 Debug.LogWarning($"[MultiplierUpgradeController]: Slot {i} ({slot.symbol}) has no Button assigned.", this);
             }
 
+            RestoreSlot(slot, i);
             RefreshSlotUI(slot);
         }
     }
@@ -167,6 +168,9 @@ public class MultiplierUpgradeController : MonoBehaviour
         MoneyManager.Instance.Deduct(cost);
         ApplyMultiplierUpgrade(slot);
         slot.CurrentTier++;
+
+        PersistSlot(slot, slotIndex);
+
         RefreshSlotUI(slot);
     }
 
@@ -181,6 +185,73 @@ public class MultiplierUpgradeController : MonoBehaviour
     {
         (float twoMatch, float threeMatch) = _winningCondition.GetMultipliers(slot.symbol);
         _winningCondition.SetMultipliers(slot.symbol, twoMatch * 2f, threeMatch * 2f);
+    }
+
+    // -------------------------------------------------------------------------
+    // Save / load helpers
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Maps a ReelItemType to its canonical index used in the save arrays.
+    /// Cherry=0, Bell=1, Bar=2, Seven=3 — matches WinningCondition.SymbolIndex.
+    /// </summary>
+    private static int SymbolSaveIndex(ReelItemType symbol) => symbol switch
+    {
+        ReelItemType.Cherry => 0,
+        ReelItemType.Bell   => 1,
+        ReelItemType.Bar    => 2,
+        ReelItemType.Seven  => 3,
+        _                   => 0
+    };
+
+    /// <summary>
+    /// Restores tier and multiplier values for a slot from save data.
+    /// Keyed by symbol so Inspector slot order does not affect correctness.
+    /// </summary>
+    private void RestoreSlot(SymbolUpgradeSlot slot, int index)
+    {
+        if (SaveManager.Instance == null) return;
+
+        GameSaveData data      = SaveManager.Instance.Data;
+        int          saveIndex = SymbolSaveIndex(slot.symbol);
+
+        if (saveIndex < data.multiplierTiers.Length)
+        {
+            slot.CurrentTier = data.multiplierTiers[saveIndex];
+        }
+
+        int valueBase = saveIndex * 2;
+        if (valueBase + 1 < data.multiplierValues.Length)
+        {
+            _winningCondition.SetMultipliers(
+                slot.symbol,
+                data.multiplierValues[valueBase],
+                data.multiplierValues[valueBase + 1]);
+        }
+    }
+
+    /// <summary>Writes a slot's tier and current multiplier values to save data.</summary>
+    private void PersistSlot(SymbolUpgradeSlot slot, int index)
+    {
+        if (SaveManager.Instance == null) return;
+
+        GameSaveData data      = SaveManager.Instance.Data;
+        int          saveIndex = SymbolSaveIndex(slot.symbol);
+
+        if (saveIndex < data.multiplierTiers.Length)
+        {
+            data.multiplierTiers[saveIndex] = slot.CurrentTier;
+        }
+
+        (float twoMatch, float threeMatch) = _winningCondition.GetMultipliers(slot.symbol);
+        int valueBase = saveIndex * 2;
+        if (valueBase + 1 < data.multiplierValues.Length)
+        {
+            data.multiplierValues[valueBase]     = twoMatch;
+            data.multiplierValues[valueBase + 1] = threeMatch;
+        }
+
+        SaveManager.Instance.Save();
     }
 
     // -------------------------------------------------------------------------

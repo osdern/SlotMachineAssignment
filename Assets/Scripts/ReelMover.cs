@@ -131,6 +131,8 @@ public class ReelMover : MonoBehaviour
 
         _config?.StartSpin();
 
+        AudioManager.Instance?.PlayReel();
+
         _rectTransform.anchoredPosition = _startPosition;
 
         MoveToSlot();
@@ -295,6 +297,7 @@ public class ReelMover : MonoBehaviour
 
             if (_config.LoopComplete >= 3)
             {
+                AudioManager.Instance?.StopReel();
                 _winningCondition?.Evaluate();
             }
         }

@@ -66,10 +66,19 @@ public class MoneyManager : MonoBehaviour
             }
         }
 
-        // Seed balance from whatever the label currently shows
-        if (_moneyText != null && int.TryParse(_moneyText.text.Trim(), out int parsed))
+        // Seed balance from save data, falling back to the label text.
+        if (SaveManager.Instance != null)
+        {
+            _currentBalance = SaveManager.Instance.Data.balance;
+        }
+        else if (_moneyText != null && int.TryParse(_moneyText.text.Trim(), out int parsed))
         {
             _currentBalance = parsed;
+        }
+
+        if (_moneyText != null)
+        {
+            _moneyText.text = _currentBalance.ToString("0");
         }
     }
 
@@ -90,6 +99,7 @@ public class MoneyManager : MonoBehaviour
         _currentBalance = Mathf.Max(0, _currentBalance - Mathf.RoundToInt(amount));
         int to = _currentBalance;
 
+        PersistBalance();
         StartCoroutine(AnimateMoney(from, to));
     }
 
@@ -103,12 +113,21 @@ public class MoneyManager : MonoBehaviour
         _currentBalance += amount;
         int to = _currentBalance;
 
+        PersistBalance();
         StartCoroutine(AnimateMoney(from, to));
     }
 
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    /// <summary>Writes the current balance to the active save data and persists it.</summary>
+    private void PersistBalance()
+    {
+        if (SaveManager.Instance == null) return;
+        SaveManager.Instance.Data.balance = _currentBalance;
+        SaveManager.Instance.Save();
+    }
 
     /// <summary>
     /// Counts the Money label from <paramref name="from"/> to <paramref name="to"/>

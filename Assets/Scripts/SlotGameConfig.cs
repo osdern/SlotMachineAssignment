@@ -152,6 +152,8 @@ public class SlotGameConfig : MonoBehaviour
             case ReelItemType.Bell:   _bellLuck   = clamped; break;
             case ReelItemType.Bar:    _barLuck    = clamped; break;
         }
+
+        PersistConfig();
     }
 
     /// <summary>
@@ -161,6 +163,7 @@ public class SlotGameConfig : MonoBehaviour
     public void SetGamblingMoney(float value)
     {
         _gamblingMoney = Mathf.Max(1f, value);
+        PersistConfig();
     }
 
     /// <summary>
@@ -170,11 +173,39 @@ public class SlotGameConfig : MonoBehaviour
     public void SetSpinDuration(float seconds)
     {
         _spinDuration = Mathf.Max(1f, seconds);
+        PersistConfig();
     }
 
     // -------------------------------------------------------------------------
     // Unity lifecycle
     // -------------------------------------------------------------------------
+
+    private void Awake()
+    {
+        if (SaveManager.Instance == null) return;
+
+        GameSaveData data = SaveManager.Instance.Data;
+        _sevenLuck     = data.sevenLuck;
+        _cherryLuck    = data.cherryLuck;
+        _bellLuck      = data.bellLuck;
+        _barLuck       = data.barLuck;
+        _spinDuration  = data.spinDuration;
+        _gamblingMoney = data.gamblingMoney;
+    }
+
+    private void PersistConfig()
+    {
+        if (SaveManager.Instance == null) return;
+
+        GameSaveData data = SaveManager.Instance.Data;
+        data.sevenLuck     = _sevenLuck;
+        data.cherryLuck    = _cherryLuck;
+        data.bellLuck      = _bellLuck;
+        data.barLuck       = _barLuck;
+        data.spinDuration  = _spinDuration;
+        data.gamblingMoney = _gamblingMoney;
+        SaveManager.Instance.Save();
+    }
 
     private void Update()
     {
