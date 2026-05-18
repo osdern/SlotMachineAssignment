@@ -75,6 +75,9 @@ public class SlotGameConfig : MonoBehaviour
     /// <summary>Amount deducted from the player's balance on each spin.</summary>
     public float GamblingMoney => _gamblingMoney;
 
+    /// <summary>Total duration the reels spin before luck evaluation begins.</summary>
+    public float SpinDuration => _spinDuration;
+
     /// <summary>Number of slots that have completed their spin and stopped via luck.</summary>
     public int LoopComplete => _loopComplete;
 
@@ -132,6 +135,41 @@ public class SlotGameConfig : MonoBehaviour
             ReelItemType.Bar    => _barLuck,
             _                   => 0f
         };
+    }
+
+    /// <summary>
+    /// Overwrites the luck value for the given symbol type.
+    /// Value is clamped to [0, 1].
+    /// </summary>
+    public void SetLuck(ReelItemType type, float value)
+    {
+        float clamped = Mathf.Clamp01(value);
+
+        switch (type)
+        {
+            case ReelItemType.Seven:  _sevenLuck  = clamped; break;
+            case ReelItemType.Cherry: _cherryLuck = clamped; break;
+            case ReelItemType.Bell:   _bellLuck   = clamped; break;
+            case ReelItemType.Bar:    _barLuck    = clamped; break;
+        }
+    }
+
+    /// <summary>
+    /// Overwrites the gambling money deducted per spin.
+    /// Value is clamped to a minimum of 1.
+    /// </summary>
+    public void SetGamblingMoney(float value)
+    {
+        _gamblingMoney = Mathf.Max(1f, value);
+    }
+
+    /// <summary>
+    /// Overwrites the spin duration. Clamped to a minimum of 1 second.
+    /// Takes effect on the next spin.
+    /// </summary>
+    public void SetSpinDuration(float seconds)
+    {
+        _spinDuration = Mathf.Max(1f, seconds);
     }
 
     // -------------------------------------------------------------------------

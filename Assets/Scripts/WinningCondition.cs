@@ -17,6 +17,27 @@ using UnityEngine;
 public class WinningCondition : MonoBehaviour
 {
     // -------------------------------------------------------------------------
+    // Nested types
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Serializable payout entry for a single symbol.
+    /// Visible and editable in the Inspector under "Payout Multipliers".
+    /// </summary>
+    [System.Serializable]
+    public struct SymbolMultiplier
+    {
+        [Tooltip("The reel symbol this entry applies to.")]
+        public ReelItemType symbol;
+
+        [Tooltip("Reward multiplier when exactly 2 of this symbol appear.")]
+        public float twoMatch;
+
+        [Tooltip("Reward multiplier when all 3 symbols match.")]
+        public float threeMatch;
+    }
+
+    // -------------------------------------------------------------------------
     // Constants
     // -------------------------------------------------------------------------
 
@@ -34,6 +55,16 @@ public class WinningCondition : MonoBehaviour
     [Header("Coin Spawn")]
     [Tooltip("The RectTransform from which winning coins will be spawned.")]
     [SerializeField] private RectTransform _coinSpawnOrigin;
+
+    [Header("Payout Multipliers")]
+    [Tooltip("Per-symbol payout multipliers. Order must match SymbolIndex: Cherry, Bell, Bar, Seven.")]
+    [SerializeField] private SymbolMultiplier[] _multipliers = new SymbolMultiplier[]
+    {
+        new SymbolMultiplier { symbol = ReelItemType.Cherry, twoMatch = 1.5f,  threeMatch = 3.0f  },
+        new SymbolMultiplier { symbol = ReelItemType.Bell,   twoMatch = 2.5f,  threeMatch = 6.0f  },
+        new SymbolMultiplier { symbol = ReelItemType.Bar,    twoMatch = 4.0f,  threeMatch = 10.0f },
+        new SymbolMultiplier { symbol = ReelItemType.Seven,  twoMatch = 7.5f,  threeMatch = 25.0f },
+    };
 
     // -------------------------------------------------------------------------
     // Private state
@@ -106,9 +137,40 @@ public class WinningCondition : MonoBehaviour
         MoneyManager.Instance?.AddMoney(coins);
     }
 
+    /// <summary>
+    /// Returns the current 2-match and 3-match multipliers for the given symbol.
+    /// </summary>
+    public (float twoMatch, float threeMatch) GetMultipliers(ReelItemType symbol)
+    {
+        int idx = SymbolIndex(symbol);
+        return (_multipliers[idx].twoMatch, _multipliers[idx].threeMatch);
+    }
+
+    /// <summary>
+    /// Overwrites the multipliers for the given symbol at runtime (e.g. from MultiplierUpgradeController).
+    /// </summary>
+    public void SetMultipliers(ReelItemType symbol, float twoMatch, float threeMatch)
+    {
+        int idx = SymbolIndex(symbol);
+        _multipliers[idx].twoMatch   = twoMatch;
+        _multipliers[idx].threeMatch = threeMatch;
+    }
+
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    private static int SymbolIndex(ReelItemType symbol)
+    {
+        return symbol switch
+        {
+            ReelItemType.Cherry => 0,
+            ReelItemType.Bell   => 1,
+            ReelItemType.Bar    => 2,
+            ReelItemType.Seven  => 3,
+            _                   => 0
+        };
+    }
 
     private ReelItemType? GetSlotSymbol(Transform slot)
     {
@@ -169,14 +231,8 @@ public class WinningCondition : MonoBehaviour
 
     private float GetMultiplier(ReelItemType symbol, int matchCount)
     {
-        return symbol switch
-        {
-            ReelItemType.Cherry => matchCount == 3 ? 3.0f  : 1.5f,
-            ReelItemType.Bell   => matchCount == 3 ? 6.0f  : 2.5f,
-            ReelItemType.Bar    => matchCount == 3 ? 10.0f : 4.0f,
-            ReelItemType.Seven  => matchCount == 3 ? 25.0f : 7.5f,
-            _                   => 0f
-        };
+        int idx = SymbolIndex(symbol);
+        return matchCount == 3 ? _multipliers[idx].threeMatch : _multipliers[idx].twoMatch;
     }
 
     private void SpawnWinCoins(int coins)

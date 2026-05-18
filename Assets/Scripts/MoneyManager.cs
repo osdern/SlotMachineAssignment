@@ -12,7 +12,7 @@ public class MoneyManager : MonoBehaviour
     // Constants
     // -------------------------------------------------------------------------
 
-    private const float MoneyAnimDuration = 0.5f;
+    private const float MoneyAnimDuration = 1f;
 
     // -------------------------------------------------------------------------
     // Singleton
@@ -32,7 +32,7 @@ public class MoneyManager : MonoBehaviour
     // Private state
     // -------------------------------------------------------------------------
 
-    private float _currentBalance;
+    private int _currentBalance;
 
     // -------------------------------------------------------------------------
     // Unity lifecycle
@@ -67,7 +67,7 @@ public class MoneyManager : MonoBehaviour
         }
 
         // Seed balance from whatever the label currently shows
-        if (_moneyText != null && float.TryParse(_moneyText.text.Trim(), out float parsed))
+        if (_moneyText != null && int.TryParse(_moneyText.text.Trim(), out int parsed))
         {
             _currentBalance = parsed;
         }
@@ -86,9 +86,9 @@ public class MoneyManager : MonoBehaviour
     /// </summary>
     public void Deduct(float amount)
     {
-        int from = (int)_currentBalance;
-        _currentBalance = Mathf.Max(0f, _currentBalance - amount);
-        int to = (int)_currentBalance;
+        int from = _currentBalance;
+        _currentBalance = Mathf.Max(0, _currentBalance - Mathf.RoundToInt(amount));
+        int to = _currentBalance;
 
         StartCoroutine(AnimateMoney(from, to));
     }
@@ -99,9 +99,9 @@ public class MoneyManager : MonoBehaviour
     /// </summary>
     public void AddMoney(int amount)
     {
-        int from = (int)_currentBalance;
+        int from = _currentBalance;
         _currentBalance += amount;
-        int to = (int)_currentBalance;
+        int to = _currentBalance;
 
         StartCoroutine(AnimateMoney(from, to));
     }
