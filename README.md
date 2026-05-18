@@ -1,6 +1,9 @@
 # SlotMachineAssignment
 # Jackpot Rush
 
+## Play Online
+🔗 https://osdern.github.io/SlotMachineAssignment/
+
 Jackpot Rush is a 2D pixel-art slot machine game developed in Unity using C#.  
 The game combines classic casino mechanics with upgrade systems, probability manipulation, animated rewards, and a short story-driven progression.
 
